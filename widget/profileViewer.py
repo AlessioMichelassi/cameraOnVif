@@ -32,9 +32,15 @@ class ProfileViewer(QWidget):
                 tab_layout = QVBoxLayout(tab)
 
                 if isinstance(value, zeep.xsd.valueobjects.CompoundValue):
+                    group_box = self.createGroupBox(attr)  # Usa attr come titolo del gruppo
+                    group_layout = QVBoxLayout(group_box)
+
                     for sub_attr in value:
                         sub_value = getattr(value, sub_attr)
-                        self.create_label_and_field(tab_layout, sub_attr, sub_value)
+                        self.create_label_and_field(group_layout, sub_attr, sub_value)
+
+                    group_box.setLayout(group_layout)
+                    tab_layout.addWidget(group_box)
                 else:
                     self.create_label_and_field(tab_layout, attr, value)
 
@@ -52,6 +58,8 @@ class ProfileViewer(QWidget):
         row_layout.addWidget(edit)
         layout.addLayout(row_layout)
 
+    def createGroupBox(self, name):
+        return QGroupBox(name)
 
 
 # Test del Viewer

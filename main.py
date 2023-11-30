@@ -1,16 +1,44 @@
-# This is a sample Python script.
+import sys
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPalette, QColor
+from PyQt6.QtWidgets import QApplication
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+8 to toggle the breakpoint.
+from widget.profileViewer import ProfileViewer
 
 
-# Press the green button in the gutter to run the script.
+def setPalette(_app):
+    _app.setStyle("Fusion")
+    darkPalette = _app.palette()
+    darkPalette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
+    darkPalette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.white)
+    darkPalette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, QColor(127, 127, 127), )
+    darkPalette.setColor(QPalette.ColorRole.Base, QColor(42, 42, 42))
+    darkPalette.setColor(QPalette.ColorRole.AlternateBase, QColor(66, 66, 66))
+    darkPalette.setColor(QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
+    darkPalette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.white)
+    darkPalette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.white)
+    darkPalette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, QColor(127, 127, 127), )
+    darkPalette.setColor(QPalette.ColorRole.Dark, QColor(35, 35, 35))
+    darkPalette.setColor(QPalette.ColorRole.Shadow, QColor(20, 20, 20))
+    darkPalette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
+    darkPalette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.white)
+    darkPalette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, QColor(127, 127, 127), )
+    darkPalette.setColor(QPalette.ColorRole.BrightText, Qt.GlobalColor.red)
+    darkPalette.setColor(QPalette.ColorRole.Link, QColor(42, 130, 218))
+    darkPalette.setColor(QPalette.ColorRole.Highlight, QColor(42, 130, 218))
+    darkPalette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Highlight, QColor(80, 80, 80), )
+    darkPalette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
+    darkPalette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.HighlightedText, QColor(127, 127, 127), )
+    _app.setPalette(darkPalette)
+
+
+def main():
+    app = QApplication(sys.argv)
+    setPalette(app)
+    window = ProfileViewer()
+    window.show()
+    sys.exit(app.exec())
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()
