@@ -5,6 +5,7 @@ from scratch.test import onvifCam
 
 
 class ProfileViewer(QWidget):
+
     def __init__(self, profile_list):
         super().__init__()
         self.layout = QVBoxLayout(self)
@@ -73,7 +74,7 @@ if __name__ == '__main__':
     cam.errorSignal.connect(print)
     cam.initCredential(credential)
     cam.connectCam()
-    profile_data = cam.get_media_profiles()
+    profile_data = cam.getMediaProfile()
     viewer = ProfileViewer(profile_data)
     viewer.show()
     app.exec()

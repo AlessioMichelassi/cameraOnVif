@@ -3,6 +3,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPalette, QColor
 from PyQt6.QtWidgets import QApplication
 
+from widget.ccuWidget import CCUWidget
 from widget.profileViewer import ProfileViewer
 
 
@@ -33,10 +34,22 @@ def setPalette(_app):
 
 
 def main():
+    from onvifManager.onvifImageManager import OnvifImageManager
     app = QApplication(sys.argv)
     setPalette(app)
-    window = ProfileViewer()
-    window.show()
+
+    credential = {
+        "ip": "192.168.1.52",
+        "port": 2000,
+        "username": "admin",
+        "password": "admin"
+    }
+
+    imageManager = OnvifImageManager(**credential)
+    imageManager.errorSignal.connect(print)
+    imageManager.serverMessageSignal.connect(print)
+    mw = CCUWidget(imageManager)
+    mw.show()
     sys.exit(app.exec())
 
 
