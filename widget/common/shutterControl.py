@@ -44,6 +44,8 @@ class ShutterWidget(QWidget):
         self.cmbShutterMode.currentTextChanged.connect(self.setShutterMode)
         self.cmbShutterPriority.currentTextChanged.connect(self.setShutterPriority)
 
+
+
     def initWidget(self):
         self.initShutterMode()
         self.initShutterPriority()
@@ -85,6 +87,7 @@ class ShutterWidget(QWidget):
 
     def initGain(self):
         self.gainWidget = self.initGenericWidgets("Gain")
+        self.gainWidget.setEnabled(False)
 
     def initIris(self):
         self.irisWidget = DialAperture()
@@ -114,7 +117,7 @@ class ShutterWidget(QWidget):
         pass
 
     def setIrisValue(self, value):
-        self.imageManager.irisWidget(value)
+        self.imageManager.setIris(value)
 
     def setShutterMode(self, mode):
         self.imageManager.setExposureMode(mode)
@@ -134,6 +137,9 @@ class ShutterWidget(QWidget):
         self.gainWidget.setValue(gain)
         self.irisWidget.setValue(iris)
 
+    def sendErrorMessage(self, message):
+        self.errorSignal.emit(message)
+
 
 if __name__ == '__main__':
     from onvifManager.onvifImageManager import OnvifImageManager
@@ -147,7 +153,8 @@ if __name__ == '__main__':
         "password": "admin"
     }
 
-    imageManager = OnvifImageManager(**credential)
+    imageManager = OnvifImageManager()
+    imageManager.connect(**credential)
     imageManager.errorSignal.connect(print)
     imageManager.serverMessageSignal.connect(print)
     win = ShutterWidget(imageManager)

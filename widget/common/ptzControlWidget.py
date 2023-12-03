@@ -89,14 +89,111 @@ class PTZPanTiltWidget(QWidget):
         self.moveSignal.emit(pan_speed, tilt_speed)
 
 
+class PTZControlWidget(QWidget):
+    btnDelete: QPushButton
+    btnSave: QPushButton
+    btnShift: QPushButton
+    btnHome: QPushButton
+    btnSetHome: QPushButton
+    btnSend: QPushButton
+    btnZoom: QPushButton
+    btnVelPlus: QPushButton
+    btnVelMinus: QPushButton
+    btnEnter: QPushButton
+
+
+    btn0: QPushButton
+    btn1: QPushButton
+    btn2: QPushButton
+    btn3: QPushButton
+    btn4: QPushButton
+    btn5: QPushButton
+    btn6: QPushButton
+    btn7: QPushButton
+    btn8: QPushButton
+    btn9: QPushButton
+
+    ptzPanTilt: PTZPanTiltWidget
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.initUI()
+        self.initConnection()
+
+    def initUI(self):
+        self.ptzPanTilt = PTZPanTiltWidget()
+        layout = QHBoxLayout()
+        layout.addWidget(self.ptzPanTilt)
+        layout.addLayout(self.initPresetMemoryBtn())
+        self.setLayout(layout)
+
+    def initPresetMemoryBtn(self):
+        """
+        Crea una griglia di bottoni per i preset memory
+        home | set home | sZoom | vel-|
+        7   |       8   | 9     | vel+|
+        4   |       5   | 6     |     |
+        1   |       2   | 3     |     |
+        0               | shift | send|
+        :return:
+        """
+        grid = QGridLayout()
+        grid.setSpacing(0)
+
+        # Prima riga
+        grid.addWidget(self.createBtn("home"), 0, 0)
+        grid.addWidget(self.createBtn("set home"), 0, 1)
+        grid.addWidget(self.createBtn("sZoom"), 0, 2)
+        grid.addWidget(self.createBtn("vel-"), 0, 3)
+
+        # Seconda riga
+        grid.addWidget(self.createBtn("7"), 1, 0)
+        grid.addWidget(self.createBtn("8"), 1, 1)
+        grid.addWidget(self.createBtn("9"), 1, 2)
+        grid.addWidget(self.createBtn("vel+"), 1, 3, 2, 1)  # Span due righe
+
+        # Terza riga
+        grid.addWidget(self.createBtn("4"), 2, 0)
+        grid.addWidget(self.createBtn("5"), 2, 1)
+        grid.addWidget(self.createBtn("6"), 2, 2)
+
+        # Quarta riga
+        grid.addWidget(self.createBtn("1"), 3, 0)
+        grid.addWidget(self.createBtn("2"), 3, 1)
+        grid.addWidget(self.createBtn("3"), 3, 2)
+
+        grid.addWidget(self.createBtn("Enter"), 3, 3, 2, 1)  # Span due righe
+
+        # Quinta riga
+        grid.addWidget(self.createBtn("0"), 4, 0, 1, 2)  # Span due colonne
+        grid.addWidget(self.createBtn("save"), 4, 2)
+        
+
+        return grid
+
+    def createBtn(self, text):
+        btn = QPushButton(text)
+        if text in ["Enter", "vel+"]:
+            btn.setFixedSize(50, 100)
+        elif text == "0":
+            btn.setFixedSize(100, 50)
+        else:
+            btn.setFixedSize(50, 50)
+        return btn
+
+    def initConnection(self):
+        pass
+
+    def movePTZ(self, pan, tilt, zoom):
+        print(f"Pan: {pan}, Tilt: {tilt}, Zoom: {zoom}")
+
+    def stopPTZ(self):
+        print("Stop")
+
+
 # Test del PTZPanTiltWidget
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    mainWidget = QWidget()
-    layout = QVBoxLayout(mainWidget)
-
-    ptzControl = PTZPanTiltWidget()
-    layout.addWidget(ptzControl)
-    ptzControl.moveSignal.connect(lambda x, y: print(f"Pan: {x}, Tilt: {y}"))
-    mainWidget.show()
+    widget = PTZControlWidget()
+    widget.show()
     sys.exit(app.exec())

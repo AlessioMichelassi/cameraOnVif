@@ -54,7 +54,6 @@ class IrisWidget(QWidget):
         """
         self.dialIris.setStyleSheet(style)
 
-
     def initConnection(self):
         self.dialIris.valueChanged.connect(self.updateDisplay)
 

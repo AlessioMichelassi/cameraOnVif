@@ -12,15 +12,23 @@ class OnvifImageManager(QObject):
     errorSignal = pyqtSignal(str)
     serverMessageSignal = pyqtSignal(str)
 
-
-    def __init__(self, ip, port, username, password, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
+
+    def connect(self, ip, port, username, password):
         try:
             self.cam = ONVIFCamera(ip, port, username, password)
-            self.initImagingSettings()
+            if self.cam.devicemgmt.GetDeviceInformation():
+                self.initImagingSettings()
+            else:
+                self.serverMessageSignal.emit("Disconnected")
         except Exception as e:
             errorString = f"Error initializing Image Manager: {e}"
             self.errorSignal.emit(errorString)
+
+    def disconnect(self):
+        self.cam = None
+        self.serverMessageSignal.emit("Disconnected")
 
     def initImagingSettings(self):
         try:
@@ -36,13 +44,47 @@ class OnvifImageManager(QObject):
 
     @property
     def exposure(self):
-        exposure = {}
-        if hasattr(self.currentSettings, 'Exposure'):
-            exposure = self.currentSettings.Exposure
-            for attr in dir(exposure):
-                value = getattr(exposure, attr)
-                exposure[attr] = value
-        return exposure
+        """
+        Ottiene le impostazioni correnti di esposizione della telecamera.
+        Restituisce un dizionario con le impostazioni se disponibili, altrimenti un dizionario vuoto.
+        """
+        exposure_settings = {}
+        if hasattr(self.currentSettings, 'Exposure') and self.currentSettings.Exposure is not None:
+            for attr in dir(self.currentSettings.Exposure):
+                if not attr.startswith('_') and hasattr(self.currentSettings.Exposure, attr):
+                    value = getattr(self.currentSettings.Exposure, attr)
+                    exposure_settings[attr] = value
+        return exposure_settings
+
+    def getExposureTime(self):
+        try:
+            # Assicurati di avere le impostazioni di imaging correnti
+            self.getImagingSettings()
+
+            if hasattr(self.currentSettings, 'Exposure') and hasattr(self.currentSettings.Exposure, 'ExposureTime'):
+                return self.currentSettings.Exposure.ExposureTime
+            else:
+                return "No exposure time setting available"
+        except Exception as e:
+            self.errorSignal.emit(f"Error retrieving current exposure time: {e}")
+            return f"Error: {e}"
+
+    def setExposureTime(self, value):
+        try:
+            # Assicurati di avere le impostazioni di imaging correnti
+            self.getImagingSettings()
+            # Aggiorna solo il tempo di esposizione
+            if hasattr(self.currentSettings, 'Exposure'):
+                self.currentSettings.Exposure.ExposureTime = value
+
+                self.imagingService.SetImagingSettings({
+                    'VideoSourceToken': self.videoToken,
+                    'ImagingSettings': self.currentSettings
+                })
+            else:
+                self.errorSignal.emit("Exposure settings not available")
+        except Exception as e:
+            self.errorSignal.emit(f"Error setting exposure time: {e}")
 
     def getExposureModes(self):
         try:
@@ -101,39 +143,31 @@ class OnvifImageManager(QObject):
             self.errorSignal.emit(f"Error setting exposure priority: {e}")
 
     @property
-    def iris(self) -> dict:
-        iris = {}
-        if hasattr(self.currentSettings, 'Iris'):
-            iris = self.currentSettings.Iris
-            for attr in dir(iris):
-                value = getattr(iris, attr)
-                iris[attr] = value
-        return iris
-
-    def getIrisModes(self):
-        # ritorna il valore corrente dell'apertura
-        try:
-            options = self.imagingService.GetOptions({'VideoSourceToken': self.videoToken})
-            if hasattr(options, 'Iris'):
-                return options.Iris  # Restituisce una lista delle modalità di apertura supportate
-            else:
-                return None
-        except Exception as e:
-            self.errorSignal.emit(f"Error retrieving iris modes: {e}")
-            return None
+    def iris(self) -> str:
+        if hasattr(self.currentSettings, 'Exposure') and hasattr(self.currentSettings.Exposure, 'Iris'):
+            return str(self.currentSettings.Exposure.Iris)
+        else:
+            return "Iris setting not available"
 
     def setIris(self, value):
         try:
-            # Assicurati di avere le impostazioni di imaging correnti
             self.getImagingSettings()
-            # Aggiorna solo la modalità di esposizione
             if hasattr(self.currentSettings, 'Exposure'):
-                self.currentSettings.Exposure.Iris = value
+                float_value = float(value)  # Converti il valore in float
+                self.currentSettings.Exposure.Iris = float_value
 
                 self.imagingService.SetImagingSettings({
                     'VideoSourceToken': self.videoToken,
                     'ImagingSettings': self.currentSettings
                 })
+
+                # Ricarica le impostazioni per verificare che l'aggiornamento sia andato a buon fine
+                self.getImagingSettings()
+                if self.currentSettings.Exposure.Iris == float_value:
+                    print(f"Iris set to {float_value}")
+                else:
+                    print(f"Error setting iris to {float_value}, current iris is {self.currentSettings.Exposure.Iris}")
+
             else:
                 self.errorSignal.emit("Iris settings not available")
         except Exception as e:
@@ -293,10 +327,13 @@ if __name__ == '__main__':
         "password": "admin"
     }
 
-    imageManager = OnvifImageManager(**credential)
+    imageManager = OnvifImageManager()
+    imageManager.connect(**credential)
     imageManager.errorSignal.connect(print)
     imageManager.serverMessageSignal.connect(print)
     print("Image Manager initialized.")
     print(imageManager.getExposureModes())
     print(imageManager.getExposurePriority())
-    print(imageManager.exposure)
+    print(imageManager.iris)
+    imageManager.setIris(5)
+    print(imageManager.iris)

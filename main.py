@@ -45,10 +45,10 @@ def main():
         "password": "admin"
     }
 
-    imageManager = OnvifImageManager(**credential)
+    imageManager = OnvifImageManager()
     imageManager.errorSignal.connect(print)
     imageManager.serverMessageSignal.connect(print)
-    mw = CCUWidget(imageManager)
+    mw = CCUWidget()
     mw.show()
     sys.exit(app.exec())
 
